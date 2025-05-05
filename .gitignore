@@ -1,0 +1,83 @@
+# ──────────────── Python ────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.so
+*.egg-info/
+*.egg
+*.log
+*.sqlite3
+*.db
+.env
+.env.*
+
+# виртуальные окружения
+venv/
+.venv/
+ENV/
+env/
+# PyCharm / VSCode перенаправленные venv
+*/site-packages/
+
+# Jupyter / ipynb‑checkpoints
+*.ipynb
+.ipynb_checkpoints/
+
+# pytest / coverage
+htmlcov/
+.coverage*
+.cache/
+.pytest_cache/
+
+# mypy / pylint
+.mypy_cache/
+.pylint.d/
+
+# ──────────────── Docker ────────────────
+# итоговые образы / кеши
+**/Dockerfile
+**/docker-compose*.yml
+docker-compose.override.yml
+.dockerignore
+# Docker build cache (BuildKit)
+**/.docker/
+
+# ──────────────── IDE ────────────────
+# PyCharm
+.idea/
+# VSCode
+.vscode/
+# CLion / Rider
+.clion/
+# JetBrains общие
+*.iml
+*.iws
+*.ipr
+
+# ──────────────── OS miscellany ─────────
+.DS_Store
+Thumbs.db
+
+# ──────────────── Secrets / credentials ─────────
+credentials.json
+*.pem
+*.key
+*.crt
+
+# ──────────────── Logs / dumps ─────────
+logs/
+*.log.*
+*.out
+*.err
+
+# ──────────────── Docker volumes (если монтируешь) ─────────
+# logs/ и другие каталоги‑тома оставь, если хранятся в git
+# например:
+# volumes/
+
+# ──────────────── Build / dist ─────────
+build/
+dist/
+*.tar.gz
+*.whl
