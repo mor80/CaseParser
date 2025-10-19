@@ -2,7 +2,34 @@
 Сервис для синхронизации данных с Google Sheets
 """
 
-from typing import Dict
+from typing import Dict, Optional
+
+
+def _normalize_price(value: Optional[str]) -> Optional[float]:
+    """Преобразует строковое представление цены Steam в float."""
+    if value is None:
+        return None
+
+    if isinstance(value, (int, float)):
+        return float(value)
+
+    price_str = str(value).strip()
+    if not price_str or price_str.upper() == "N/A":
+        return None
+
+    cleaned = (
+        price_str.replace("руб.", "")
+        .replace("₽", "")
+        .replace("\u200e", "")
+        .replace("\u00a0", "")
+        .replace(" ", "")
+        .replace(",", ".")
+    )
+
+    try:
+        return float(cleaned)
+    except ValueError:
+        return None
 
 from src.core.database import DatabaseService
 from src.services.price_fetcher import PriceFetcher
@@ -92,7 +119,8 @@ class SheetSyncService:
             
             for row_idx, price in prices_by_row.items():
                 try:
-                    if price == "N/A":
+                    normalized_price = _normalize_price(price)
+                    if normalized_price is None:
                         continue
                     
                     # Получаем информацию о кейсе
@@ -102,16 +130,17 @@ class SheetSyncService:
                     case = await self.db_service.save_case(case_name)
                     
                     # Сохраняем цену в историю
-                    await self.db_service.save_price(str(case.id), float(price))
+                    await self.db_service.save_price(str(case.id), normalized_price)
                     
                     # Обновляем статистику
                     await self.db_service.update_case_statistics(str(case.id))
                     
                     # Обновляем Google Sheets
-                    self.sheet_client.update_price(row_idx, price)
+                    display_value = price if price is not None else normalized_price
+                    self.sheet_client.update_price(row_idx, display_value)
                     
                     updated_count += 1
-                    print(f"✅ Обновлена цена для {case_name}: {price} руб.")
+                    print(f"✅ Обновлена цена для {case_name}: {normalized_price} руб.")
                     
                 except Exception as e:
                     error_msg = f"Ошибка обновления цены для строки {row_idx}: {e}"
