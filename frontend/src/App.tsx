@@ -14,9 +14,45 @@ import {
 } from "react-icons/fa";
 import { clsx } from "clsx";
 
-const API_BASE_URL =
-  (typeof import.meta !== "undefined" && import.meta.env.VITE_API_BASE_URL) ||
-  "http://localhost:8000";
+const resolveApiBaseUrl = (): string => {
+  const getFromWindow = () => {
+    const { protocol, hostname, port } = window.location;
+    const apiPort = port === "8001" ? "8000" : port;
+    const portPart = apiPort ? `:${apiPort}` : "";
+    return `${protocol}//${hostname}${portPart}`.replace(/\/$/, "");
+  };
+
+  const envUrl =
+    typeof import.meta !== "undefined" ? (import.meta.env.VITE_API_BASE_URL as string | undefined) : undefined;
+
+  if (envUrl) {
+    if (typeof window !== "undefined") {
+      try {
+        const parsed = new URL(envUrl, window.location.origin);
+        const envHost = parsed.hostname;
+        const currentHost = window.location.hostname;
+        if (
+          ["localhost", "127.0.0.1"].includes(envHost) &&
+          !["localhost", "127.0.0.1"].includes(currentHost)
+        ) {
+          return getFromWindow();
+        }
+        return parsed.origin.replace(/\/$/, "");
+      } catch {
+        return envUrl.replace(/\/$/, "");
+      }
+    }
+    return envUrl.replace(/\/$/, "");
+  }
+
+  if (typeof window !== "undefined") {
+    return getFromWindow();
+  }
+
+  return "http://localhost:8000";
+};
+
+const API_BASE_URL = resolveApiBaseUrl();
 
 type Section = "dashboard" | "cases" | "analytics" | "portfolio";
 
